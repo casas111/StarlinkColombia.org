@@ -1,0 +1,3 @@
+import { syncStarlinkRows } from "../../../../lib/sheet-sync";
+function authorized(request:Request){const token=process.env.SHEET_SYNC_TOKEN;return Boolean(token&&request.headers.get("authorization")===`Bearer ${token}`);}
+export async function POST(request:Request){if(!authorized(request))return Response.json({error:"Unauthorized"},{status:401});try{const body=await request.json() as {rows?:unknown[][]};if(!Array.isArray(body.rows))return Response.json({error:"Missing rows"},{status:400});return Response.json({ok:true,...await syncStarlinkRows(body.rows)});}catch(error){return Response.json({ok:false,error:error instanceof Error?error.message:"Sync failed"},{status:502});}}

@@ -1,0 +1,15 @@
+import { eq } from "drizzle-orm";
+import { getDb } from "../db";
+import { applications } from "../db/schema";
+
+export async function evaluatePriority(application:typeof applications.$inferSelect){
+ try{
+  const apiKey=process.env.OPENAI_API_KEY;if(!apiKey)return {ok:false as const,error:"missing_key"};
+  const model=process.env.OPENAI_PRIORITY_MODEL||"gpt-5.6-terra";
+  const input={organization:application.organization,organizationType:application.organizationType,department:application.department,city:application.city,location:application.location,units:application.units,useCase:application.useCase,impact:application.impact,responsibleRole:application.responsibleRole,powerAvailable:application.powerAvailable,safeInstallation:application.safeInstallation,continuityPlan:application.continuityPlan,deliveryTiming:application.deliveryTiming,requestedDeliveryAt:application.requestedDeliveryAt};
+  const response=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{authorization:`Bearer ${apiKey}`,"content-type":"application/json"},body:JSON.stringify({model,reasoning:{effort:"medium"},instructions:"Evalúa solicitudes de conectividad Starlink para respuesta humanitaria en Colombia. Asigna prioridad con criterios consistentes: urgencia y riesgo humano 30%, criticidad y personas beneficiadas 25%, falta de alternativas 15%, preparación técnica y logística 15%, continuidad después de la crisis 10%, claridad y responsable local 5%. No favorezcas prestigio institucional ni calidad de redacción. La puntuación es apoyo a decisión humana, no una decisión final. Sé breve y señala incertidumbres.",input:JSON.stringify(input),text:{format:{type:"json_schema",name:"priority_evaluation",strict:true,schema:{type:"object",additionalProperties:false,properties:{score:{type:"integer",minimum:0,maximum:100},level:{type:"string",enum:["critical","high","medium","low"]},rationale:{type:"string"},factors:{type:"array",items:{type:"string"},minItems:2,maxItems:5},uncertainties:{type:"array",items:{type:"string"},maxItems:4}},required:["score","level","rationale","factors","uncertainties"]}}}})});
+  if(!response.ok){const problem=await response.json().catch(()=>null) as {error?:{code?:string}}|null;return {ok:false as const,error:problem?.error?.code||`openai_${response.status}`};}
+  const data=await response.json() as {output?:Array<{content?:Array<{type?:string;text?:string}>}>};const text=data.output?.flatMap(x=>x.content||[]).find(x=>x.type==="output_text")?.text;if(!text)return {ok:false as const,error:"empty_response"};
+  const result=JSON.parse(text) as {score:number;level:string;rationale:string;factors:string[];uncertainties:string[]};const now=new Date().toISOString();await (await getDb()).update(applications).set({aiPriorityScore:result.score,aiPriorityLevel:result.level,aiPriorityRationale:result.rationale,aiPriorityFactors:JSON.stringify({factors:result.factors,uncertainties:result.uncertainties}),aiEvaluatedAt:now,aiModel:model,updatedAt:now}).where(eq(applications.id,application.id));return {ok:true as const,...result};
+ }catch{return {ok:false as const,error:"invalid_model_response"};}
+}
