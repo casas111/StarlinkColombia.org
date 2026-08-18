@@ -13,13 +13,22 @@ export async function recordMcpAudit(
   actor: AuthorizedAdmin,
   input: AuditInput,
 ) {
-  if (actor.authSource !== "mcp" || !actor.tokenId) return;
-  await (await getDb()).insert(mcpAuditLogs).values({
+  const values = buildMcpAuditRecord(actor, input);
+  if (!values) return;
+  await (await getDb()).insert(mcpAuditLogs).values(values);
+}
+
+export function buildMcpAuditRecord(
+  actor: AuthorizedAdmin,
+  input: AuditInput,
+) {
+  if (actor.authSource !== "mcp" || !actor.tokenId) return null;
+  return {
     actorEmail: actor.email,
     tokenId: actor.tokenId,
     action: input.action.slice(0, 100),
     targetType: input.targetType,
     targetId: String(input.targetId).slice(0, 200),
     detail: JSON.stringify(input.detail ?? {}).slice(0, 4000),
-  });
+  };
 }

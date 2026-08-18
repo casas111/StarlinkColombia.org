@@ -39,3 +39,31 @@ test("backend client rejects insecure remote URLs and surfaces API errors", asyn
     (error) => error instanceof BackendRequestError && error.status === 403 && error.message === "Unauthorized",
   );
 });
+
+test("backend client preserves multipart evidence and lets fetch set its boundary", async () => {
+  let captured;
+  const client = createBackendClient({
+    baseUrl: "https://starlinkcolombia.org",
+    fetchImpl: async (url, init) => {
+      captured = { init, url: String(url) };
+      return new Response(JSON.stringify({ count: 1, ids: [99], ok: true }), { status: 201 });
+    },
+    token: "operator-token",
+  });
+  const form = new FormData();
+  form.set("entityType", "application");
+  form.set("entityId", "7");
+  form.append("files", new File(["proof"], "proof.txt", { type: "text/plain" }));
+
+  const result = await client.request("/api/admin/evidence", {
+    body: form,
+    method: "POST",
+    timeoutMs: 120_000,
+  });
+
+  assert.deepEqual(result, { count: 1, ids: [99], ok: true });
+  assert.equal(captured.url, "https://starlinkcolombia.org/api/admin/evidence");
+  assert.equal(captured.init.body, form);
+  assert.equal(captured.init.headers.authorization, "Bearer operator-token");
+  assert.equal("content-type" in captured.init.headers, false);
+});

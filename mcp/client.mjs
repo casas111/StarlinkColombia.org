@@ -21,16 +21,17 @@ export function createBackendClient({
   if (typeof fetchImpl !== "function") throw new Error("A fetch implementation is required");
 
   return {
-    async request(path, { body, method = "GET" } = {}) {
+    async request(path, { body, method = "GET", timeoutMs = 30_000 } = {}) {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30_000);
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      const isFormData = body instanceof FormData;
       try {
         const response = await fetchImpl(new URL(path, origin), {
-          body: body === undefined ? undefined : JSON.stringify(body),
+          body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body),
           headers: {
             accept: "application/json",
             authorization: `Bearer ${token.trim()}`,
-            ...(body === undefined ? {} : { "content-type": "application/json" }),
+            ...(body === undefined || isFormData ? {} : { "content-type": "application/json" }),
             "x-mcp-request-id": crypto.randomUUID(),
           },
           method,
