@@ -4,6 +4,8 @@
 
 Conecta Colombia recibe solicitudes de conectividad, permite priorizarlas y mantiene el inventario histórico de operaciones Starlink. El sitio público es `https://starlinkcolombia.org` y el proyecto de OpenAI Sites es `appgprj_6a81d6d346cc81918cd340dec886d821`.
 
+Conecta Colombia es una iniciativa independiente de coordinación humanitaria. No está afiliada, patrocinada ni operada por Starlink o SpaceX; las referencias a esas marcas describen únicamente la tecnología de conectividad gestionada por el portal. El MCP se presenta públicamente como **Conecta Colombia Operations MCP** para evitar cualquier apariencia de servicio oficial del fabricante.
+
 El Google Sheet operativo central tiene ID `19Kiz4i6-BtG_7aVcuWHlS5KZWYMZFlA3ZVbcK4tK1gM`.
 
 ## Arquitectura

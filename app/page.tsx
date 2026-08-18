@@ -33,7 +33,7 @@ export default function Home() {
     setReference(result.reference); setStatus("sent");
   }
 
-  if (status === "sent") return <main className="public-shell"><section className="success-card"><div className="success-mark">✓</div><p className="eyebrow">Solicitud recibida</p><h1>Gracias por ayudarnos a conectar donde más se necesita.</h1><p>El equipo revisará la información y se comunicará con la persona responsable.</p><div className="reference">Referencia <strong>{reference}</strong></div><button className="secondary-button" onClick={() => { setForm(initialForm); setStep(1); setStatus("idle"); }}>Enviar otra solicitud</button></section></main>;
+  if (status === "sent") return <main className="public-shell"><section className="success-card"><div className="success-mark">✓</div><p className="eyebrow">Solicitud recibida</p><h1>Gracias por ayudarnos a conectar donde más se necesita.</h1><p>El equipo revisará la información y se comunicará con la persona responsable.</p><div className="reference">Referencia <strong>{reference}</strong></div><button className="secondary-button" onClick={() => { setForm(initialForm); setStep(1); setStatus("idle"); }}>Enviar otra solicitud</button><p className="independence-note">Conecta Colombia es una iniciativa independiente y no está afiliada, patrocinada ni operada por Starlink o SpaceX.</p></section></main>;
 
   return <main className="public-shell">
     <header className="topbar"><Link className="brand" href="/" aria-label="Conecta Colombia, inicio"><span className="signal-dot"/><span>Conecta Colombia</span></Link><Link className="admin-link" href="/admin">Administradores</Link></header>
@@ -49,6 +49,6 @@ export default function Home() {
       </form>
     </section>
     <section className="whatsapp-strip"><div><span className="wa-icon">◉</span><div><strong>¿Prefieres conversar?</strong><p>También podrás aplicar por WhatsApp con el agente de Conecta Colombia.</p></div></div><span className="coming-soon">Canal en activación</span></section>
-    <footer><span>Conecta Colombia</span><p>Una iniciativa de coordinación humanitaria para llevar conectividad a donde más se necesita.</p></footer>
+    <footer><span>Conecta Colombia</span><div className="footer-copy"><p>Una iniciativa de coordinación humanitaria para llevar conectividad a donde más se necesita.</p><small>Proyecto independiente. No afiliado, patrocinado ni operado por Starlink o SpaceX.</small></div></footer>
   </main>;
 }

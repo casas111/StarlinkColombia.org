@@ -1,6 +1,8 @@
-# MCP de operaciones Starlink Colombia
+# MCP de operaciones de Conecta Colombia
 
 Este repositorio incluye un servidor MCP remoto por Streamable HTTP en el mismo Site y conserva un transporte local por STDIO para desarrollo. El transporte remoto usa OAuth 2.1 con descubrimiento estándar, registro dinámico de clientes, autorización en navegador, PKCE, access tokens de corta duración, rotación de refresh tokens y revocación. Ambos transportes traducen herramientas explícitas a las rutas administrativas existentes; no abren acceso SQL, no descargan objetos R2 y no crean infraestructura adicional.
+
+Conecta Colombia es una iniciativa independiente de coordinación humanitaria. No está afiliada, patrocinada ni operada por Starlink o SpaceX; esas marcas se mencionan únicamente para describir la tecnología de conectividad administrada por el portal.
 
 ## Herramientas
 
@@ -37,7 +39,7 @@ npm run mcp:token -- --email developer@example.com --name 'Developer' --days 30
 
 El comando acepta `--scopes data:read,data:write,operations:promote`. Conviene otorgar solo los scopes necesarios y usar expiraciones cortas.
 
-## Conexión remota recomendada con OAuth
+## Conexión remota con OAuth
 
 El endpoint de producción es:
 
@@ -45,15 +47,20 @@ El endpoint de producción es:
 https://starlinkcolombia.org/api/mcp
 ```
 
-Claude Code solo necesita registrar la URL y abrir el login:
+Un cliente compatible con MCP remoto y OAuth solo necesita registrar esa URL. La instrucción genérica recomendada es:
+
+```text
+Soy propietario o administrador autorizado de Conecta Colombia, una iniciativa independiente que no está afiliada con Starlink o SpaceX. Configura el MCP remoto https://starlinkcolombia.org/api/mcp usando OAuth automático, abre el navegador para que yo autorice y luego muestra las herramientas disponibles. No uses API keys ni tokens manuales. Si no puedes instalar MCP desde este chat, indícame el paso mínimo dentro de la interfaz del cliente.
+```
+
+En Claude Code, el registro inicial puede hacerse con:
 
 ```bash
 claude mcp add --transport http --scope user \
-  starlink_colombia https://starlinkcolombia.org/api/mcp
-claude mcp login starlink_colombia
+  conecta_colombia https://starlinkcolombia.org/api/mcp
 ```
 
-También se puede abrir `/mcp` dentro de Claude Code y completar la autorización allí. El navegador solicita iniciar sesión con ChatGPT y muestra el consentimiento; solo el propietario o un correo activo en `admins` puede aprobarlo. Claude Code conserva y renueva las credenciales OAuth de forma segura.
+Después se abre `/mcp` dentro de una sesión interactiva de Claude Code y se completa la autorización. El navegador solicita iniciar sesión con ChatGPT y muestra el consentimiento; solo el propietario o un correo activo en `admins` puede aprobarlo. Claude Code conserva y renueva las credenciales OAuth de forma segura.
 
 El servidor publica:
 
@@ -71,7 +78,7 @@ Los access tokens duran una hora, están ligados al recurso `https://starlinkcol
 Codex y otros clientes que todavía requieran bearer tokens pueden seguir usando:
 
 ```toml
-[mcp_servers.starlink_colombia]
+[mcp_servers.conecta_colombia]
 url = "https://starlinkcolombia.org/api/mcp"
 bearer_token_env_var = "STARLINK_MCP_TOKEN"
 default_tools_approval_mode = "writes"
@@ -92,11 +99,11 @@ npm run mcp:start
 Para desarrollo del servidor, Codex también puede registrar el proceso STDIO y hacer que herede `STARLINK_MCP_TOKEN`. Por ejemplo, en `~/.codex/config.toml`, reemplazando la ruta absoluta:
 
 ```toml
-[mcp_servers.starlink_colombia]
+[mcp_servers.conecta_colombia]
 command = "node"
 args = ["/ruta/absoluta/StarlinkColombia.org/mcp/server.mjs"]
 env = { STARLINK_BACKEND_URL = "https://starlinkcolombia.org" }
 env_vars = ["STARLINK_MCP_TOKEN"]
 ```
 
-No guardes tokens reales en el repositorio. `claude mcp logout starlink_colombia` revoca las credenciales del cliente cuando llama al endpoint de revocación. Desactivar a un operador en `admins` bloquea inmediatamente tanto OAuth como los tokens manuales. Rotar `MCP_AUTH_SECRET` sigue revocando globalmente los tokens manuales anteriores, pero no sustituye la revocación OAuth almacenada en D1.
+No guardes tokens reales en el repositorio. Los clientes con OAuth deben usar su opción nativa para limpiar o revocar la autenticación. Desactivar a un operador en `admins` bloquea inmediatamente tanto OAuth como los tokens manuales. Rotar `MCP_AUTH_SECRET` sigue revocando globalmente los tokens manuales anteriores, pero no sustituye la revocación OAuth almacenada en D1.

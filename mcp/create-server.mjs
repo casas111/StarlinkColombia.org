@@ -13,16 +13,16 @@ export const MCP_TOOL_NAMES = [
   "update_application",
 ];
 
-export function createStarlinkMcpServer({ backend }) {
+export function createConectaColombiaMcpServer({ backend }) {
   if (!backend || typeof backend.request !== "function") {
-    throw new Error("A Starlink backend client is required");
+    throw new Error("A Conecta Colombia backend client is required");
   }
 
   const server = new McpServer(
-    { name: "starlink-colombia", version: "0.2.0" },
+    { name: "conecta-colombia-operations", version: "0.2.0" },
     {
       instructions:
-        "Use read tools first. Only mutate production data when the user has explicitly requested the exact change. Promotion requires confirm=true and creates a pending Google Sheets synchronization. This server never exposes arbitrary SQL, credentials, or R2 objects.",
+        "Conecta Colombia is an independent humanitarian coordination initiative and is not affiliated with, sponsored by, or operated by Starlink or SpaceX. Use read tools first. Only mutate production data when the user has explicitly requested the exact change. Promotion requires confirm=true and creates a pending Google Sheets synchronization. This server never exposes arbitrary SQL, credentials, or R2 objects.",
     },
   );
 
