@@ -1,4 +1,4 @@
-CREATE TABLE `mcp_audit_logs` (
+CREATE TABLE IF NOT EXISTS `mcp_audit_logs` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`actor_email` text NOT NULL,
 	`token_id` text NOT NULL,
