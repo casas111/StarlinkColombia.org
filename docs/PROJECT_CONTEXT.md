@@ -12,7 +12,7 @@ El Google Sheet operativo central tiene ID `19Kiz4i6-BtG_7aVcuWHlS5KZWYMZFlA3ZVb
 - Cloudflare D1 enlazado como `DB` para datos relacionales.
 - Cloudflare R2 enlazado como `BUCKET` para evidencias y contratos.
 - Drizzle ORM define el modelo en `db/schema.ts`; `drizzle/` contiene migraciones forward-only.
-- Un MCP remoto por Streamable HTTP, alojado en `/api/mcp` dentro del mismo Site, traduce herramientas explícitas a rutas administrativas autenticadas. El transporte STDIO se conserva como alternativa local; ninguno expone SQL ni acceso directo a R2.
+- Un MCP remoto por Streamable HTTP, alojado en `/api/mcp` dentro del mismo Site, traduce herramientas explícitas a rutas administrativas autenticadas. OAuth 2.1 aporta descubrimiento, DCR, consentimiento con ChatGPT, PKCE, refresh rotation y revocación. El transporte STDIO y los bearer tokens firmados se conservan como compatibilidad; ninguno expone SQL ni acceso directo a R2.
 - La configuración de Sites vive en `.openai/hosting.json` y debe conservarse.
 
 Tablas D1 actuales:
@@ -23,6 +23,9 @@ Tablas D1 actuales:
 - `admin_invites`
 - `activities`
 - `mcp_audit_logs`
+- `oauth_clients`
+- `oauth_authorization_codes`
+- `oauth_tokens`
 - `allocations`
 - `allocation_overrides`
 - `operational_evidence`

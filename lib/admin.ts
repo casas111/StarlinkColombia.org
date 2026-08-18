@@ -3,6 +3,7 @@ import { getDb } from "../db";
 import { admins } from "../db/schema";
 import { getChatGPTUser } from "../app/chatgpt-auth";
 import { verifyMcpToken } from "./mcp-token";
+import { resolveOAuthAccessToken } from "./oauth-store";
 
 export const OWNER_EMAIL = "a.casas402@gmail.com";
 export type McpScope = "data:read" | "data:write" | "operations:promote";
@@ -40,11 +41,13 @@ async function getAuthorizedMcpAdmin(
   token: string,
   requiredScope?: McpScope,
 ): Promise<AuthorizedAdmin | null> {
-  const secret = process.env.MCP_AUTH_SECRET;
-  if (!secret) return null;
-
   try {
-    const claims = await verifyMcpToken(token, secret);
+    const claims = token.startsWith("smoa1_")
+      ? await resolveOAuthAccessToken(token)
+      : process.env.MCP_AUTH_SECRET
+        ? await verifyMcpToken(token, process.env.MCP_AUTH_SECRET)
+        : null;
+    if (!claims) return null;
     if (requiredScope && !claims.scopes.includes(requiredScope)) return null;
 
     const db = await getDb();

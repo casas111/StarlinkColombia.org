@@ -30,7 +30,10 @@ test("remote MCP rejects unauthenticated requests and advertises CORS", async ()
     }),
   );
   assert.equal(response.status, 401);
-  assert.equal(response.headers.get("www-authenticate"), 'Bearer realm="starlink-colombia-mcp"');
+  assert.equal(
+    response.headers.get("www-authenticate"),
+    'Bearer realm="starlink-colombia-mcp", resource_metadata="https://starlinkcolombia.org/.well-known/oauth-protected-resource", scope="data:read data:write operations:promote"',
+  );
   assert.equal(response.headers.get("access-control-allow-origin"), "*");
 });
 
