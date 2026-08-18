@@ -42,6 +42,17 @@ export const activities = sqliteTable("activities", {
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const mcpAuditLogs = sqliteTable("mcp_audit_logs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  actorEmail: text("actor_email").notNull(),
+  tokenId: text("token_id").notNull(),
+  action: text("action").notNull(),
+  targetType: text("target_type").notNull(),
+  targetId: text("target_id").notNull(),
+  detail: text("detail").notNull().default(""),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const allocations = sqliteTable("allocations", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   sourceRow: integer("source_row").notNull().unique(),

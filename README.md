@@ -27,6 +27,7 @@ npm run dev          # servidor local
 npm run lint         # ESLint
 npm test             # build verificado y pruebas
 npm run db:generate  # migración Drizzle después de cambiar el schema
+npm run mcp:start    # servidor MCP local por STDIO
 ```
 
 ## Estructura
@@ -35,10 +36,13 @@ npm run db:generate  # migración Drizzle después de cambiar el schema
 - `db/`: conexión y esquema D1.
 - `drizzle/`: migraciones versionadas y snapshots.
 - `lib/`: sincronización con Sheets y evaluación de prioridad.
+- `mcp/`: herramientas locales para operar el backend mediante endpoints permitidos.
 - `worker/`: entrada del Worker.
 - `.openai/hosting.json`: identidad del proyecto Sites y bindings `DB`/`BUCKET`.
 
 Lee [AGENTS.md](AGENTS.md) antes de hacer cambios y [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md) para arquitectura, sincronización y operación.
+
+La configuración, scopes y activación del MCP están en [docs/MCP.md](docs/MCP.md). Las contribuciones por pull request se describen en [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Publicación
 
