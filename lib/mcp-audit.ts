@@ -6,7 +6,7 @@ type AuditInput = {
   action: string;
   detail?: Record<string, unknown>;
   targetId: string | number;
-  targetType: "allocation" | "application";
+  targetType: "allocation" | "application" | "inventory";
 };
 
 export async function recordMcpAudit(

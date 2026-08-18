@@ -12,6 +12,9 @@ Conecta Colombia es una iniciativa independiente de coordinación humanitaria. N
 - `update_allocation`: override del portal sin sobrescribir la fuente de Google Sheets.
 - `promote_application`: promoción explícita a operaciones; exige `confirm: true`.
 - `attach_application_evidence`: adjunta entre uno y diez archivos o imágenes a una solicitud existente. Recibe el contenido en base64 estándar, reutiliza la validación del portal y guarda los bytes en R2 con sus metadatos en D1.
+- `list_inventory`: consulta inventario de Recycle y lotes nuevos, con ubicación, responsable y disponibilidad.
+- `create_inventory_item`: registra un lote entrante o recuperado manualmente. No es idempotente y no debe reintentarse automáticamente.
+- `update_inventory_item`: actualiza ubicación, responsable, unidades, disponibilidad, notas o estado de control de inventario.
 
 La carga de evidencias acepta imágenes, PDF, Word, Excel, CSV y texto. Cada archivo puede pesar hasta 12 MB y el lote completo hasta 50 MB. Como cada ejecución crea evidencia nueva, el cliente no debe reintentar automáticamente una llamada cuyo resultado sea incierto.
 

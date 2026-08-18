@@ -3,17 +3,22 @@ import * as z from "zod/v4";
 import { MAX_EVIDENCE_FILE_COUNT } from "../lib/evidence-upload.mjs";
 import { MAX_EVIDENCE_BASE64_LENGTH, buildApplicationEvidenceFormData } from "./evidence.mjs";
 
-const stages = ["new", "review", "prioritized", "approved", "delivery", "active", "declined"];
+const stages = ["new", "review", "prioritized", "approved", "delivery", "active", "recycle", "declined"];
+const inventoryAvailability = ["pending", "scheduled", "available"];
+const inventoryStatuses = ["active", "reserved", "archived"];
 
 export const MCP_TOOL_NAMES = [
   "attach_application_evidence",
+  "create_inventory_item",
   "get_allocation",
   "get_application",
   "list_allocations",
   "list_applications",
+  "list_inventory",
   "promote_application",
   "update_allocation",
   "update_application",
+  "update_inventory_item",
 ];
 
 export function createStarlinkMcpServer({ backend }) {
@@ -22,11 +27,76 @@ export function createStarlinkMcpServer({ backend }) {
   }
 
   const server = new McpServer(
-    { name: "starlink-colombia", version: "0.3.0" },
+    { name: "starlink-colombia", version: "0.4.0" },
     {
       instructions:
-        "Conecta Colombia is an independent humanitarian coordination initiative and is not affiliated with, sponsored by, or operated by Starlink or SpaceX. Use read tools first. Only mutate production data when the user has explicitly requested the exact change. Promotion requires confirm=true and creates a pending Google Sheets synchronization. Evidence uploads are not idempotent: attach only the exact files requested and never retry automatically. This server never exposes arbitrary SQL, credentials, or raw R2 access.",
+        "Conecta Colombia is an independent humanitarian coordination initiative and is not affiliated with, sponsored by, or operated by Starlink or SpaceX. Use read tools first. Only mutate production data when the user has explicitly requested the exact change. Promotion requires confirm=true and creates a pending Google Sheets synchronization. Evidence uploads and inventory creation are not idempotent: perform them only once and never retry automatically. This server never exposes arbitrary SQL, credentials, or raw R2 access.",
     },
+  );
+
+  server.registerTool(
+    "list_inventory",
+    {
+      annotations: { readOnlyHint: true },
+      description: "List inventory from Recycle and incoming lots, including location, handler, and availability.",
+      inputSchema: {
+        availabilityStatus: z.enum(inventoryAvailability).optional(),
+        limit: z.number().int().min(1).max(100).default(50),
+        query: z.string().trim().max(200).optional(),
+        sourceType: z.enum(["recycle", "incoming"]).optional(),
+        status: z.enum(inventoryStatuses).optional(),
+      },
+    },
+    runTool(async ({ availabilityStatus, limit, query, sourceType, status }) => {
+      const result = await backend.request("/api/admin/inventory");
+      const needle = query?.toLocaleLowerCase("es-CO");
+      const inventory = (Array.isArray(result.inventory) ? result.inventory : []).filter((item) => {
+        if (availabilityStatus && item.availabilityStatus !== availabilityStatus) return false;
+        if (sourceType && item.sourceType !== sourceType) return false;
+        if (status && item.status !== status) return false;
+        return !needle || JSON.stringify(item).toLocaleLowerCase("es-CO").includes(needle);
+      });
+      return { inventory: inventory.slice(0, limit), totalMatched: inventory.length };
+    }),
+  );
+
+  server.registerTool(
+    "create_inventory_item",
+    {
+      annotations: { destructiveHint: false, idempotentHint: false, readOnlyHint: false },
+      description: "Register an incoming or manually recovered inventory lot. Do not retry automatically because a duplicate lot would be created.",
+      inputSchema: {
+        availabilityStatus: z.enum(inventoryAvailability),
+        availableAt: z.string().trim().max(50).optional(),
+        handlerEmail: z.email(),
+        location: z.string().trim().min(1).max(500),
+        name: z.string().trim().min(1).max(250),
+        notes: z.string().trim().max(1500).optional(),
+        sourceType: z.enum(["recycle", "incoming"]),
+        units: z.number().int().min(1).max(1000),
+      },
+    },
+    runTool(async (input) => backend.request("/api/admin/inventory", { body: input, method: "POST" })),
+  );
+
+  server.registerTool(
+    "update_inventory_item",
+    {
+      annotations: { idempotentHint: true, readOnlyHint: false },
+      description: "Update an inventory lot's location, handler, availability, quantity, notes, or control status.",
+      inputSchema: {
+        availabilityStatus: z.enum(inventoryAvailability).optional(),
+        availableAt: z.string().trim().max(50).optional(),
+        handlerEmail: z.email().optional(),
+        id: z.number().int().positive(),
+        location: z.string().trim().min(1).max(500).optional(),
+        name: z.string().trim().min(1).max(250).optional(),
+        notes: z.string().trim().max(1500).optional(),
+        status: z.enum(inventoryStatuses).optional(),
+        units: z.number().int().min(1).max(1000).optional(),
+      },
+    },
+    runTool(async (input) => backend.request("/api/admin/inventory", { body: input, method: "PATCH" })),
   );
 
   server.registerTool(

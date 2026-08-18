@@ -125,6 +125,29 @@ export const allocationOverrides = sqliteTable("allocation_overrides", {
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const inventoryItems = sqliteTable("inventory_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  sourceType: text("source_type").notNull(),
+  sourceEntityType: text("source_entity_type"),
+  sourceEntityId: integer("source_entity_id"),
+  name: text("name").notNull(),
+  units: integer("units").notNull().default(1),
+  location: text("location").notNull(),
+  handlerEmail: text("handler_email").notNull(),
+  handlerName: text("handler_name").notNull(),
+  availabilityStatus: text("availability_status").notNull().default("pending"),
+  availableAt: text("available_at"),
+  notes: text("notes").notNull().default(""),
+  status: text("status").notNull().default("active"),
+  createdBy: text("created_by").notNull(),
+  updatedBy: text("updated_by").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [
+  uniqueIndex("inventory_items_source_entity_idx").on(table.sourceEntityType, table.sourceEntityId),
+  index("inventory_items_status_availability_idx").on(table.status, table.availabilityStatus),
+]);
+
 export const operationalEvidence = sqliteTable("operational_evidence", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   entityType: text("entity_type").notNull(),

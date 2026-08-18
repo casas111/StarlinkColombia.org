@@ -30,6 +30,7 @@ Tablas D1 actuales:
 - `oauth_tokens`
 - `allocations`
 - `allocation_overrides`
+- `inventory_items`
 - `operational_evidence`
 - `donation_accounts`
 - `donation_account_assignments`
@@ -71,6 +72,14 @@ Los registros de `applications` cuyo `status` sea exactamente `new` se reflejan 
 ### Promociones
 
 `/api/sync/promotions` expone la cola de promociones explícitas. Una sincronización nunca debe equivaler a una promoción automática.
+
+### Recycle e inventario disponible
+
+- `recycle` es el paso operativo posterior a `active` para solicitudes y asignaciones.
+- Al mover una tarjeta a `recycle`, el portal crea de forma idempotente un registro enlazado en `inventory_items`; al sacar la tarjeta de `recycle`, ese registro se archiva sin borrarse.
+- La sección **Inventario disponible** reúne equipos recuperados por Recycle y lotes nuevos entrantes.
+- Cada registro conserva unidades, ubicación, administrador responsable, estado de disponibilidad, fecha estimada y notas operativas.
+- Los lotes pueden estar activos, reservados o archivados; la disponibilidad puede estar pendiente, programada o lista.
 
 ## Incidencia conocida que requiere regresión
 

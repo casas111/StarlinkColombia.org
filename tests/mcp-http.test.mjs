@@ -14,6 +14,7 @@ function createHandler({ onEvidence } = {}) {
           return { applications: [{ id: 7, organization: "Test Organization", status: "new" }] };
         }
         if (path === "/api/admin/allocations") return { allocations: [] };
+        if (path === "/api/admin/inventory") return { inventory: [{ id: 4, sourceType: "recycle", availabilityStatus: "available", status: "active", location: "Bogotá" }] };
         if (path === "/api/admin/evidence") {
           onEvidence?.(options);
           return { count: 1, ids: [88], ok: true };
@@ -60,6 +61,11 @@ test("remote MCP completes Streamable HTTP initialization, tool discovery, and a
     const result = await client.callTool({ name: "list_applications", arguments: { limit: 1 } });
     assert.deepEqual(result.structuredContent, {
       applications: [{ id: 7, organization: "Test Organization", status: "new" }],
+      totalMatched: 1,
+    });
+    const inventory = await client.callTool({ name: "list_inventory", arguments: { availabilityStatus: "available", limit: 10 } });
+    assert.deepEqual(inventory.structuredContent, {
+      inventory: [{ id: 4, sourceType: "recycle", availabilityStatus: "available", status: "active", location: "Bogotá" }],
       totalMatched: 1,
     });
     const evidence = await client.callTool({

@@ -1,6 +1,7 @@
 import { GET as getAllocations, PATCH as patchAllocations } from "../admin/allocations/route";
 import { GET as getApplications, PATCH as patchApplications } from "../admin/applications/route";
 import { POST as postEvidence } from "../admin/evidence/route";
+import { GET as getInventory, PATCH as patchInventory, POST as postInventory } from "../admin/inventory/route";
 import { POST as promoteApplication } from "../admin/promote/route";
 import { getAuthorizedAdmin } from "../../../lib/admin";
 import { createBackendClient } from "../../../mcp/client.mjs";
@@ -14,6 +15,9 @@ const adminRoutes = new Map<string, RouteHandler>([
   ["GET /api/admin/applications", getApplications],
   ["PATCH /api/admin/applications", patchApplications],
   ["POST /api/admin/evidence", postEvidence],
+  ["GET /api/admin/inventory", getInventory],
+  ["PATCH /api/admin/inventory", patchInventory],
+  ["POST /api/admin/inventory", postInventory],
   ["POST /api/admin/promote", promoteApplication],
 ]);
 
