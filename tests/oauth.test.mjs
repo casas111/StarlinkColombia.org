@@ -6,6 +6,7 @@ import {
   MCP_RESOURCE,
   OAUTH_ISSUER,
   OAuthProtocolError,
+  authorizationPageCsp,
   authorizationServerMetadata,
   hashOpaqueToken,
   normalizeClientRegistration,
@@ -78,6 +79,29 @@ test("authorization requests require a registered callback and S256 PKCE", async
   assert.throws(() => validateAuthorizationRequest(params, client), /PKCE/u);
   assert.equal(await verifyPkce(verifier, challenge), true);
   assert.equal(await verifyPkce(`${verifier}x`, challenge), false);
+});
+
+test("authorization page CSP permits only the validated callback origin", () => {
+  assert.match(
+    authorizationPageCsp("https://www.perplexity.ai/rest/connections/oauth_callback"),
+    /form-action 'self' https:\/\/www\.perplexity\.ai;/u,
+  );
+  assert.match(
+    authorizationPageCsp("http://127.0.0.1:8765/callback"),
+    /form-action 'self' http:\/\/127\.0\.0\.1:8765;/u,
+  );
+  assert.doesNotMatch(
+    authorizationPageCsp("https://client.example/callback\nscript-src *"),
+    /script-src \*/u,
+  );
+  assert.throws(
+    () => authorizationPageCsp("javascript:alert(1)"),
+    (error) => error instanceof OAuthProtocolError && error.code === "invalid_redirect_uri",
+  );
+  assert.equal(
+    authorizationPageCsp(),
+    "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
+  );
 });
 
 test("opaque token hashes are deterministic without exposing the credential", async () => {
