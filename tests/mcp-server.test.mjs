@@ -18,7 +18,7 @@ test("MCP server advertises only the allowlisted backend tools", async () => {
   const client = new Client({ name: "starlink-colombia-test", version: "1.0.0" });
   try {
     await client.connect(transport);
-    assert.equal(client.getServerVersion()?.name, "conecta-colombia-operations");
+    assert.equal(client.getServerVersion()?.name, "starlink-colombia");
     const result = await client.listTools();
     assert.deepEqual(
       result.tools.map((tool) => tool.name).sort(),

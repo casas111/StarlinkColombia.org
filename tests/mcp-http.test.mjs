@@ -32,7 +32,7 @@ test("remote MCP rejects unauthenticated requests and advertises CORS", async ()
   assert.equal(response.status, 401);
   assert.equal(
     response.headers.get("www-authenticate"),
-    'Bearer realm="conecta-colombia-mcp", resource_metadata="https://starlinkcolombia.org/.well-known/oauth-protected-resource", scope="data:read data:write operations:promote"',
+    'Bearer realm="starlink-colombia-mcp", resource_metadata="https://starlinkcolombia.org/.well-known/oauth-protected-resource", scope="data:read data:write operations:promote"',
   );
   assert.equal(response.headers.get("access-control-allow-origin"), "*");
 });
@@ -49,7 +49,7 @@ test("remote MCP completes Streamable HTTP initialization, tool discovery, and a
   const client = new Client({ name: "starlink-colombia-http-test", version: "1.0.0" });
   try {
     await client.connect(transport);
-    assert.equal(client.getServerVersion()?.name, "conecta-colombia-operations");
+    assert.equal(client.getServerVersion()?.name, "starlink-colombia");
     const tools = await client.listTools();
     assert.deepEqual(tools.tools.map((tool) => tool.name).sort(), MCP_TOOL_NAMES);
     const result = await client.callTool({ name: "list_applications", arguments: { limit: 1 } });

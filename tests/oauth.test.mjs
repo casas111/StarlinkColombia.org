@@ -23,7 +23,7 @@ test("OAuth metadata supports MCP discovery, DCR, PKCE, refresh, and revocation"
     bearer_methods_supported: ["header"],
     resource: MCP_RESOURCE,
     resource_documentation: "https://github.com/casas111/StarlinkColombia.org/blob/main/docs/MCP.md",
-    resource_name: "Conecta Colombia Operations MCP",
+    resource_name: "Starlink Colombia Operations MCP",
     scopes_supported: ["data:read", "data:write", "operations:promote"],
   });
   const metadata = authorizationServerMetadata();
