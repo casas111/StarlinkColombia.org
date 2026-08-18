@@ -1,8 +1,9 @@
 import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "../../../../db";
-import { operationalEvidence } from "../../../../db/schema";
+import { allocations, applications, mcpAuditLogs, operationalEvidence } from "../../../../db/schema";
 import { getAuthorizedAdmin } from "../../../../lib/admin";
 import { safeEvidenceFileName, validateEvidenceFiles } from "../../../../lib/evidence-upload.mjs";
+import { buildMcpAuditRecord } from "../../../../lib/mcp-audit";
 
 const entityTypes=new Set(["application","allocation"]);
 const categories=new Set(["transport","delivery","installation","activation","other"]);
@@ -19,9 +20,14 @@ export async function GET(request:Request){
 }
 
 export async function POST(request:Request){
-  const admin=await getAuthorizedAdmin();if(!admin)return Response.json({error:"Unauthorized"},{status:403});
+  const admin=await getAuthorizedAdmin(request,"data:write");if(!admin)return Response.json({error:"Unauthorized"},{status:403});
   const form=await request.formData(),entityType=String(form.get("entityType")||""),entityId=Number(form.get("entityId")),category=String(form.get("category")||"other"),note=String(form.get("note")||"").trim().slice(0,1000);
   if(!validEntity(entityType,entityId)||!categories.has(category))return Response.json({error:"Invalid evidence data"},{status:400});
+  const db=await getDb();
+  const [entity]=entityType==="application"
+    ? await db.select({id:applications.id}).from(applications).where(eq(applications.id,entityId)).limit(1)
+    : await db.select({id:allocations.id}).from(allocations).where(eq(allocations.id,entityId)).limit(1);
+  if(!entity)return Response.json({error:"Entity not found"},{status:404});
   const validation=validateEvidenceFiles([...form.getAll("files"),...form.getAll("file")]);
   if("error" in validation)return Response.json({error:validation.error},{status:validation.status});
   const prepared=validation.files.map(file=>({file,objectKey:`evidence/${entityType}/${entityId}/${crypto.randomUUID()}-${safeEvidenceFileName(file.name)}`}));
@@ -31,10 +37,12 @@ export async function POST(request:Request){
     await Promise.allSettled(prepared.map(({objectKey})=>storage.delete(objectKey)));
     return Response.json({error:"No fue posible guardar todos los archivos. Intenta de nuevo."},{status:502});
   }
-  const db=await getDb();
   try{
-    const saved=await db.insert(operationalEvidence).values(prepared.map(({file,objectKey})=>({entityType,entityId,category,note,fileName:file.name.slice(0,250),contentType:file.type||"application/octet-stream",sizeBytes:file.size,objectKey,uploadedBy:admin.email}))).returning({id:operationalEvidence.id});
-    return Response.json({ok:true,count:saved.length,ids:saved.map(item=>item.id)},{status:201});
+    const evidenceInsert=db.insert(operationalEvidence).values(prepared.map(({file,objectKey})=>({entityType,entityId,category,note,fileName:file.name.slice(0,250),contentType:file.type||"application/octet-stream",sizeBytes:file.size,objectKey,uploadedBy:admin.email}))).returning({id:operationalEvidence.id});
+    const audit=buildMcpAuditRecord(admin,{action:"evidence_attached",targetType:entityType as "application"|"allocation",targetId:entityId,detail:{category,count:prepared.length,fileNames:prepared.map(({file})=>file.name)}});
+    const saved=audit?(await db.batch([evidenceInsert,db.insert(mcpAuditLogs).values(audit)]))[0]:await evidenceInsert;
+    const ids=saved.map(item=>item.id);
+    return Response.json({ok:true,count:saved.length,ids},{status:201});
   }catch(error){
     await Promise.allSettled(prepared.map(({objectKey})=>storage.delete(objectKey)));
     console.error("Evidence metadata insert failed",error);

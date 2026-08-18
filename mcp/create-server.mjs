@@ -1,9 +1,12 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as z from "zod/v4";
+import { MAX_EVIDENCE_FILE_COUNT } from "../lib/evidence-upload.mjs";
+import { MAX_EVIDENCE_BASE64_LENGTH, buildApplicationEvidenceFormData } from "./evidence.mjs";
 
 const stages = ["new", "review", "prioritized", "approved", "delivery", "active", "declined"];
 
 export const MCP_TOOL_NAMES = [
+  "attach_application_evidence",
   "get_allocation",
   "get_application",
   "list_allocations",
@@ -19,11 +22,43 @@ export function createStarlinkMcpServer({ backend }) {
   }
 
   const server = new McpServer(
-    { name: "starlink-colombia", version: "0.2.0" },
+    { name: "starlink-colombia", version: "0.3.0" },
     {
       instructions:
-        "Conecta Colombia is an independent humanitarian coordination initiative and is not affiliated with, sponsored by, or operated by Starlink or SpaceX. Use read tools first. Only mutate production data when the user has explicitly requested the exact change. Promotion requires confirm=true and creates a pending Google Sheets synchronization. This server never exposes arbitrary SQL, credentials, or R2 objects.",
+        "Conecta Colombia is an independent humanitarian coordination initiative and is not affiliated with, sponsored by, or operated by Starlink or SpaceX. Use read tools first. Only mutate production data when the user has explicitly requested the exact change. Promotion requires confirm=true and creates a pending Google Sheets synchronization. Evidence uploads are not idempotent: attach only the exact files requested and never retry automatically. This server never exposes arbitrary SQL, credentials, or raw R2 access.",
     },
+  );
+
+  server.registerTool(
+    "attach_application_evidence",
+    {
+      annotations: { destructiveHint: false, idempotentHint: false, readOnlyHint: false },
+      description:
+        "Attach one or more images or documents to an existing request. File content must be standard base64 without a data-URL prefix. Do not retry automatically because duplicate evidence would be created.",
+      inputSchema: {
+        applicationId: z.number().int().positive(),
+        category: z.enum(["transport", "delivery", "installation", "activation", "other"]),
+        files: z
+          .array(
+            z.object({
+              contentBase64: z.string().min(1).max(MAX_EVIDENCE_BASE64_LENGTH),
+              contentType: z.string().trim().min(1).max(200),
+              fileName: z.string().trim().min(1).max(250),
+            }).strict(),
+          )
+          .min(1)
+          .max(MAX_EVIDENCE_FILE_COUNT),
+        note: z.string().trim().max(1000).optional(),
+      },
+    },
+    runTool(async (input) => {
+      const body = buildApplicationEvidenceFormData(input);
+      return backend.request("/api/admin/evidence", {
+        body,
+        method: "POST",
+        timeoutMs: 120_000,
+      });
+    }),
   );
 
   server.registerTool(

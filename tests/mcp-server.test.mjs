@@ -23,6 +23,7 @@ test("MCP server advertises only the allowlisted backend tools", async () => {
     assert.deepEqual(
       result.tools.map((tool) => tool.name).sort(),
       [
+        "attach_application_evidence",
         "get_allocation",
         "get_application",
         "list_allocations",
@@ -35,6 +36,9 @@ test("MCP server advertises only the allowlisted backend tools", async () => {
     const promote = result.tools.find((tool) => tool.name === "promote_application");
     assert.equal(promote.annotations?.destructiveHint, true);
     assert.deepEqual(promote.inputSchema.required?.sort(), ["confirm", "id"]);
+    const attach = result.tools.find((tool) => tool.name === "attach_application_evidence");
+    assert.equal(attach.annotations?.idempotentHint, false);
+    assert.deepEqual(attach.inputSchema.required?.sort(), ["applicationId", "category", "files"]);
   } finally {
     await client.close();
   }

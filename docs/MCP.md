@@ -11,6 +11,9 @@ Conecta Colombia es una iniciativa independiente de coordinación humanitaria. N
 - `list_allocations` y `get_allocation`: lectura del inventario histórico y sus overrides.
 - `update_allocation`: override del portal sin sobrescribir la fuente de Google Sheets.
 - `promote_application`: promoción explícita a operaciones; exige `confirm: true`.
+- `attach_application_evidence`: adjunta entre uno y diez archivos o imágenes a una solicitud existente. Recibe el contenido en base64 estándar, reutiliza la validación del portal y guarda los bytes en R2 con sus metadatos en D1.
+
+La carga de evidencias acepta imágenes, PDF, Word, Excel, CSV y texto. Cada archivo puede pesar hasta 12 MB y el lote completo hasta 50 MB. Como cada ejecución crea evidencia nueva, el cliente no debe reintentar automáticamente una llamada cuyo resultado sea incierto.
 
 Las mutaciones hechas con MCP quedan registradas en `mcp_audit_logs`. Los endpoints verifican scopes, audiencia y vigencia, y además exigen que el correo autorizado sea el propietario o un registro activo en `admins`.
 
