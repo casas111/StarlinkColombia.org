@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const applications = sqliteTable("applications", {
   id: integer("id").primaryKey({ autoIncrement: true }), reference: text("reference").notNull().unique(),
@@ -52,6 +52,57 @@ export const mcpAuditLogs = sqliteTable("mcp_audit_logs", {
   detail: text("detail").notNull().default(""),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const oauthClients = sqliteTable("oauth_clients", {
+  clientId: text("client_id").primaryKey(),
+  clientName: text("client_name").notNull(),
+  clientUri: text("client_uri"),
+  redirectUris: text("redirect_uris").notNull(),
+  grantTypes: text("grant_types").notNull(),
+  responseTypes: text("response_types").notNull(),
+  registrationKey: text("registration_key").notNull(),
+  createdAt: integer("created_at").notNull(),
+  lastUsedAt: integer("last_used_at"),
+}, (table) => [
+  index("oauth_clients_registration_idx").on(table.registrationKey, table.createdAt),
+]);
+
+export const oauthAuthorizationCodes = sqliteTable("oauth_authorization_codes", {
+  codeHash: text("code_hash").primaryKey(),
+  clientId: text("client_id").notNull(),
+  adminEmail: text("admin_email").notNull(),
+  adminName: text("admin_name"),
+  redirectUri: text("redirect_uri").notNull(),
+  scope: text("scope").notNull(),
+  resource: text("resource").notNull(),
+  codeChallenge: text("code_challenge").notNull(),
+  expiresAt: integer("expires_at").notNull(),
+  usedAt: integer("used_at"),
+  createdAt: integer("created_at").notNull(),
+}, (table) => [
+  index("oauth_codes_client_idx").on(table.clientId),
+  index("oauth_codes_expiry_idx").on(table.expiresAt),
+]);
+
+export const oauthTokens = sqliteTable("oauth_tokens", {
+  id: text("id").primaryKey(),
+  tokenHash: text("token_hash").notNull().unique(),
+  tokenType: text("token_type").notNull(),
+  familyId: text("family_id").notNull(),
+  clientId: text("client_id").notNull(),
+  adminEmail: text("admin_email").notNull(),
+  adminName: text("admin_name"),
+  scope: text("scope").notNull(),
+  resource: text("resource").notNull(),
+  expiresAt: integer("expires_at").notNull(),
+  consumedAt: integer("consumed_at"),
+  revokedAt: integer("revoked_at"),
+  createdAt: integer("created_at").notNull(),
+}, (table) => [
+  index("oauth_tokens_family_idx").on(table.familyId),
+  index("oauth_tokens_admin_idx").on(table.adminEmail, table.expiresAt),
+  index("oauth_tokens_expiry_idx").on(table.expiresAt),
+]);
 
 export const allocations = sqliteTable("allocations", {
   id: integer("id").primaryKey({ autoIncrement: true }),

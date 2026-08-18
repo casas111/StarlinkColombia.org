@@ -1,4 +1,5 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import { DEFAULT_OAUTH_SCOPE, OAUTH_ISSUER } from "../lib/oauth.js";
 import { createStarlinkMcpServer } from "./create-server.mjs";
 
 const corsHeaders = {
@@ -6,7 +7,7 @@ const corsHeaders = {
     "Authorization, Content-Type, Accept, MCP-Protocol-Version, MCP-Session-Id, Last-Event-ID",
   "access-control-allow-methods": "POST, OPTIONS",
   "access-control-allow-origin": "*",
-  "access-control-expose-headers": "MCP-Protocol-Version",
+  "access-control-expose-headers": "MCP-Protocol-Version, WWW-Authenticate",
   "cache-control": "no-store",
 };
 
@@ -35,7 +36,9 @@ export function createMcpHttpHandler({ authorize, createBackend }) {
         Response.json(
           { error: "Unauthorized" },
           {
-            headers: { "www-authenticate": 'Bearer realm="starlink-colombia-mcp"' },
+            headers: {
+              "www-authenticate": `Bearer realm="starlink-colombia-mcp", resource_metadata="${OAUTH_ISSUER}/.well-known/oauth-protected-resource", scope="${DEFAULT_OAUTH_SCOPE}"`,
+            },
             status: 401,
           },
         ),

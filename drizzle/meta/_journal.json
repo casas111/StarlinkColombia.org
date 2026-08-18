@@ -71,6 +71,13 @@
       "when": 1787010557626,
       "tag": "0009_milky_living_tribunal",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1787021027252,
+      "tag": "0010_public_chameleon",
+      "breakpoints": true
     }
   ]
 }
