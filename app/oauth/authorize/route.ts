@@ -1,6 +1,11 @@
 import { getAuthorizedAdmin } from "../../../lib/admin";
 import { chatGPTSignInPath, getChatGPTUser } from "../../chatgpt-auth";
-import { OAuthProtocolError, appendAuthorizationResult, validateAuthorizationRequest } from "../../../lib/oauth.js";
+import {
+  OAuthProtocolError,
+  appendAuthorizationResult,
+  authorizationPageCsp,
+  validateAuthorizationRequest,
+} from "../../../lib/oauth.js";
 import { signOAuthApproval, verifyOAuthApproval } from "../../../lib/oauth-approval.js";
 import { assertSmallRequest } from "../../../lib/oauth-http";
 import { createAuthorizationCode, getOAuthClient } from "../../../lib/oauth-store";
@@ -27,13 +32,17 @@ export async function GET(request: Request) {
       },
       process.env.MCP_AUTH_SECRET,
     );
-    return htmlPage(consentPage({
-      admin,
-      approval,
-      client: client!,
-      redirectUri: authorization.redirectUri,
-      scope: authorization.scope,
-    }));
+    return htmlPage(
+      consentPage({
+        admin,
+        approval,
+        client: client!,
+        redirectUri: authorization.redirectUri,
+        scope: authorization.scope,
+      }),
+      200,
+      authorization.redirectUri,
+    );
   } catch (error) {
     return authorizationError(error);
   }
@@ -159,11 +168,11 @@ function independenceNotice() {
   return `<p class="independence">Conecta Colombia es una iniciativa independiente de coordinación humanitaria. No está afiliada, patrocinada ni operada por Starlink o SpaceX.</p>`;
 }
 
-function htmlPage(body: string, status = 200) {
+function htmlPage(body: string, status = 200, redirectUri?: string) {
   return new Response(body, {
     headers: {
       "cache-control": "no-store",
-      "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
+      "content-security-policy": authorizationPageCsp(redirectUri),
       "content-type": "text/html; charset=utf-8",
       "x-content-type-options": "nosniff",
       "x-frame-options": "DENY",
