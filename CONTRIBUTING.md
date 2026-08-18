@@ -18,3 +18,5 @@ Los cambios entran por pull request y se publican únicamente por decisión expl
 - Un merge no autoriza publicar el Site, aplicar una migración o modificar datos de producción.
 
 Quien solo necesite colaborar con código puede trabajar desde un fork. Quien deba empujar ramas al repositorio necesita acceso `Write`; el acceso `Maintain` debe reservarse para quienes administren el repositorio, no la producción.
+
+Quien deba operar datos mediante AI no necesita acceso a D1 ni R2: debe estar activo en `admins` y recibir un token MCP individual por un canal seguro. El endpoint compartido y su configuración están documentados en `docs/MCP.md`.
