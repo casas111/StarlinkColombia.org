@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 
 type FormState = {
@@ -35,7 +36,7 @@ export default function Home() {
   if (status === "sent") return <main className="public-shell"><section className="success-card"><div className="success-mark">✓</div><p className="eyebrow">Solicitud recibida</p><h1>Gracias por ayudarnos a conectar donde más se necesita.</h1><p>El equipo revisará la información y se comunicará con la persona responsable.</p><div className="reference">Referencia <strong>{reference}</strong></div><button className="secondary-button" onClick={() => { setForm(initialForm); setStep(1); setStatus("idle"); }}>Enviar otra solicitud</button></section></main>;
 
   return <main className="public-shell">
-    <header className="topbar"><a className="brand" href="/" aria-label="Conecta Colombia, inicio"><span className="signal-dot"/><span>Conecta Colombia</span></a><a className="admin-link" href="/admin">Administradores</a></header>
+    <header className="topbar"><Link className="brand" href="/" aria-label="Conecta Colombia, inicio"><span className="signal-dot"/><span>Conecta Colombia</span></Link><Link className="admin-link" href="/admin">Administradores</Link></header>
     <section className="hero-grid">
       <div className="hero-copy"><p className="eyebrow">Conectividad para la respuesta humanitaria</p><h1>Solicita una antena Starlink para tu comunidad.</h1><p className="lede">Buscamos lugares donde la conectividad pueda responder a una necesidad urgente y seguir generando valor después de la crisis.</p><div className="principles"><div><span>01</span><p><strong>Necesidad clara</strong>Cuéntanos qué operación crítica necesita conectividad.</p></div><div><span>02</span><p><strong>Responsable local</strong>Una persona debe recibir, custodiar y acompañar la instalación.</p></div><div><span>03</span><p><strong>Impacto sostenible</strong>Priorizamos usos que puedan continuar después de la emergencia.</p></div></div></div>
       <form className="application-card" onSubmit={submit}>

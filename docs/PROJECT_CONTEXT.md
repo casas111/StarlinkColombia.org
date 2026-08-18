@@ -12,6 +12,7 @@ El Google Sheet operativo central tiene ID `19Kiz4i6-BtG_7aVcuWHlS5KZWYMZFlA3ZVb
 - Cloudflare D1 enlazado como `DB` para datos relacionales.
 - Cloudflare R2 enlazado como `BUCKET` para evidencias y contratos.
 - Drizzle ORM define el modelo en `db/schema.ts`; `drizzle/` contiene migraciones forward-only.
+- Un MCP local por STDIO traduce herramientas explícitas a rutas administrativas autenticadas; no expone SQL ni acceso directo a R2.
 - La configuración de Sites vive en `.openai/hosting.json` y debe conservarse.
 
 Tablas D1 actuales:
@@ -21,6 +22,7 @@ Tablas D1 actuales:
 - `admins`
 - `admin_invites`
 - `activities`
+- `mcp_audit_logs`
 - `allocations`
 - `allocation_overrides`
 - `operational_evidence`
@@ -33,6 +35,8 @@ Tablas D1 actuales:
 - `SHEET_SYNC_TOKEN`: bearer token para `/api/sync/starlink` y `/api/sync/promotions`.
 - `OPENAI_API_KEY`: habilita la evaluación asistida de prioridad.
 - `OPENAI_PRIORITY_MODEL`: modelo de prioridad; por defecto `gpt-5.6-terra`.
+- `MCP_AUTH_SECRET`: verifica tokens MCP firmados por operador.
+- `STARLINK_BACKEND_URL` y `STARLINK_MCP_TOKEN`: configuración local del cliente MCP; el token nunca se versiona.
 
 Solo se versionan los nombres en `.env.example`. Los valores reales se administran en el entorno de hosting.
 

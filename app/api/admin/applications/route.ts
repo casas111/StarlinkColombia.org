@@ -2,17 +2,20 @@ import { desc, eq } from "drizzle-orm";
 import { getDb } from "../../../../db";
 import { activities, admins, applications } from "../../../../db/schema";
 import { getAuthorizedAdmin } from "../../../../lib/admin";
+import { recordMcpAudit } from "../../../../lib/mcp-audit";
 
 const allowed = new Set(["new","review","prioritized","approved","delivery","active","declined"]);
-export async function GET() {
-  const admin = await getAuthorizedAdmin(); if (!admin) return Response.json({ error:"Unauthorized" },{status:403});
+export async function GET(request:Request) {
+  const admin = await getAuthorizedAdmin(request,"data:read"); if (!admin) return Response.json({ error:"Unauthorized" },{status:403});
   const rows = await (await getDb()).select().from(applications).orderBy(desc(applications.aiPriorityScore),desc(applications.createdAt));
-  return Response.json({ applications: rows, currentAdmin: admin });
+  return Response.json({ applications: rows, currentAdmin: { displayName:admin.displayName,email:admin.email,fullName:admin.fullName } });
 }
 export async function PATCH(request:Request) {
-  const admin = await getAuthorizedAdmin(); if (!admin) return Response.json({ error:"Unauthorized" },{status:403});
+  const admin = await getAuthorizedAdmin(request,"data:write"); if (!admin) return Response.json({ error:"Unauthorized" },{status:403});
   const body = await request.json() as { id?:number; status?:string; notes?:string; updates?:Record<string,unknown>; assigneeEmail?:string };
-  if (!body.id || (body.status&&!allowed.has(body.status))) return Response.json({error:"Invalid update"},{status:400});
+  const assigning=Object.prototype.hasOwnProperty.call(body,"assigneeEmail");
+  const hasChanges=Boolean(body.status||typeof body.notes==="string"||assigning||Object.keys(body.updates||{}).length);
+  if (!body.id || !hasChanges || (body.status&&!allowed.has(body.status))) return Response.json({error:"Invalid update"},{status:400});
   const db=await getDb(); const update:Record<string,unknown>={updatedAt:new Date().toISOString()};
   const [current]=await db.select({sponsorEmail:applications.sponsorEmail}).from(applications).where(eq(applications.id,body.id)).limit(1);
   if(!current)return Response.json({error:"Not found"},{status:404});
@@ -27,7 +30,7 @@ export async function PATCH(request:Request) {
     else{const [assignee]=await db.select().from(admins).where(eq(admins.email,email)).limit(1);if(!assignee||assignee.status!=="active")return Response.json({error:"Admin not available"},{status:400});update.sponsorEmail=assignee.email;update.sponsorName=assignee.name||assignee.email}
   } else if (body.status==="prioritized"&&!current.sponsorEmail) { update.sponsorEmail=admin.email; update.sponsorName=admin.displayName; }
   await db.update(applications).set(update).where(eq(applications.id,body.id));
-  const assigning=Object.prototype.hasOwnProperty.call(body,"assigneeEmail");
   await db.insert(activities).values({applicationId:body.id,actorEmail:admin.email,action:assigning?"admin_assigned":body.status?"status_changed":"card_edited",detail:assigning?(body.assigneeEmail||"unassigned"):body.status||Object.keys(body.updates||{}).join(",")});
+  await recordMcpAudit(admin,{action:"application_updated",targetType:"application",targetId:body.id,detail:{status:body.status,fields:Object.keys(body.updates||{}),assignmentChanged:assigning}});
   return Response.json({ok:true});
 }
