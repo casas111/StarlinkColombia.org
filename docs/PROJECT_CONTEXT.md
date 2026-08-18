@@ -81,5 +81,5 @@ En una revisión del 17 de agosto de 2026, las tres operaciones protegidas apare
 1. Crear una rama y hacer cambios pequeños y revisables.
 2. Ejecutar `npm run lint` y `npm test`; para esquema, también `npm run db:generate`.
 3. Abrir un pull request. No incluir secretos, exports de D1 ni archivos de R2.
-4. Fusionar código no despliega ni autoriza cambios de datos por sí solo.
-5. La publicación en Sites, las migraciones D1 y cualquier reparación de datos son pasos independientes que requieren intención explícita del propietario.
+4. Tras CI y revisión satisfactorios, fusionar y publicar el cambio en el Site existente, salvo que el propietario haya pedido explícitamente trabajo solo local, de planificación o solo PR.
+5. La publicación sigue siendo un paso separado y verificable. Nunca implica autorización para migraciones D1, reparaciones de datos, mutaciones R2 ni infraestructura nueva; esas acciones conservan su propia aprobación y alcance explícitos.
