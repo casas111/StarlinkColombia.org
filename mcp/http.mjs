@@ -1,6 +1,6 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { DEFAULT_OAUTH_SCOPE, OAUTH_ISSUER } from "../lib/oauth.js";
-import { createConectaColombiaMcpServer } from "./create-server.mjs";
+import { createStarlinkMcpServer } from "./create-server.mjs";
 
 const corsHeaders = {
   "access-control-allow-headers":
@@ -37,7 +37,7 @@ export function createMcpHttpHandler({ authorize, createBackend }) {
           { error: "Unauthorized" },
           {
             headers: {
-              "www-authenticate": `Bearer realm="conecta-colombia-mcp", resource_metadata="${OAUTH_ISSUER}/.well-known/oauth-protected-resource", scope="${DEFAULT_OAUTH_SCOPE}"`,
+              "www-authenticate": `Bearer realm="starlink-colombia-mcp", resource_metadata="${OAUTH_ISSUER}/.well-known/oauth-protected-resource", scope="${DEFAULT_OAUTH_SCOPE}"`,
             },
             status: 401,
           },
@@ -46,7 +46,7 @@ export function createMcpHttpHandler({ authorize, createBackend }) {
     }
 
     const backend = createBackend({ request, token });
-    const server = createConectaColombiaMcpServer({ backend });
+    const server = createStarlinkMcpServer({ backend });
     const transport = new WebStandardStreamableHTTPServerTransport({
       enableJsonResponse: true,
       sessionIdGenerator: undefined,
