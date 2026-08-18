@@ -9,7 +9,8 @@ This repository is the source of truth for **Conecta Colombia — Solicitud Star
 - Synchronization must be idempotent. Missing Sheet rows must not delete portal history, and references must never be duplicated.
 - Historical Starlink rows remain in `new` (shown as “Entradas por migrar”) unless an explicit workflow promotes them. The three protected operations documented in `docs/PROJECT_CONTEXT.md` remain in `delivery` (“En entrega”).
 - Change the database through `db/schema.ts` and forward-only Drizzle migrations in `drizzle/`. Do not edit or delete an applied migration.
-- Keep production mutations separate from code changes. A code review or merge does not authorize database edits, data migration, or deployment.
+- Keep production data mutations separate from code changes. A code review or merge does not authorize database edits or data migration.
+- Standing owner direction: unless the owner explicitly asks for local-only, plan-only, or PR-only work, every requested implementation change must continue through branch, validation, diff review, pull request/CI, merge, and deployment to this existing Site. This standing direction authorizes the deployment step only; it never authorizes database edits, data migrations, R2 mutations, new infrastructure, or bypassing a failed validation.
 
 ## Before handing off a change
 
@@ -22,4 +23,4 @@ npm test
 
 After a schema change, also run `npm run db:generate` and review the generated SQL.
 
-Codex may edit and validate this repository. Publishing through OpenAI Sites and any production database migration are separate, explicit owner actions.
+Codex may edit, validate, and publish approved changes to the existing OpenAI Site under the standing owner direction above. Production database migrations and data mutations remain separate actions that require explicit scope and must never be inferred from a code deployment.
