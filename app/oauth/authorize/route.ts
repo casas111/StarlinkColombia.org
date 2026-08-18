@@ -103,12 +103,13 @@ function consentPage({ admin, approval, client, redirectUri, scope }: {
       <div class="brand"><span></span>Conecta Colombia</div>
       <p class="eyebrow">Autorización MCP</p>
       <h1>Conectar ${escapeHtml(client.clientName)}</h1>
-      <p class="lead">${escapeHtml(client.clientName)} solicita operar Starlink Colombia en nombre de <strong>${escapeHtml(admin.email)}</strong>.</p>
+      <p class="lead">${escapeHtml(client.clientName)} solicita operar el portal de solicitudes de Conecta Colombia en nombre de <strong>${escapeHtml(admin.email)}</strong>.</p>
       <section>
         <h2>Permisos solicitados</h2>
         <ul>${permissions}</ul>
       </section>
       <p class="destination">Al continuar volverás a <strong>${escapeHtml(redirectHost)}</strong>. Solo autoriza si tú iniciaste esta conexión.</p>
+      ${independenceNotice()}
       <form method="post" action="/oauth/authorize">
         <input type="hidden" name="approval" value="${escapeHtml(approval)}">
         <button class="approve" type="submit" name="decision" value="approve">Autorizar conexión</button>
@@ -126,6 +127,7 @@ function accessDeniedPage(email: string) {
       <p class="eyebrow">Acceso restringido</p>
       <h1>Esta cuenta no está activa.</h1>
       <p class="lead">${escapeHtml(email)} debe figurar como administrador activo antes de conectar el MCP.</p>
+      ${independenceNotice()}
     </main>
   `);
 }
@@ -141,6 +143,7 @@ function authorizationError(error: unknown) {
       <h1>No pudimos continuar.</h1>
       <p class="lead">${escapeHtml(message)}</p>
       <p class="destination">Regresa al cliente MCP e inicia nuevamente la conexión.</p>
+      ${independenceNotice()}
     </main>
   `), status);
 }
@@ -148,7 +151,12 @@ function authorizationError(error: unknown) {
 function pageShell(content: string) {
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autorizar MCP · Conecta Colombia</title><style>
   :root{color-scheme:light;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#eef2ed;color:#15271d}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at top,#f9fbf8 0,#e9efea 68%)}.card{width:min(100%,560px);background:white;border:1px solid #dce5dd;border-radius:24px;padding:34px;box-shadow:0 24px 70px rgba(21,39,29,.12)}.brand{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:850}.brand span{width:11px;height:11px;border-radius:50%;background:#2d8758;box-shadow:0 0 0 6px #e0f0e6}.eyebrow{margin:35px 0 8px;color:#2d8758;font-size:11px;font-weight:850;letter-spacing:.11em;text-transform:uppercase}h1{font-size:32px;line-height:1.1;margin:0 0 14px;letter-spacing:-.035em}.lead{color:#506158;line-height:1.6;margin:0 0 24px}section{border:1px solid #e0e8e1;border-radius:16px;padding:18px 20px;background:#fafcf9}h2{font-size:13px;margin:0 0 12px}ul{display:grid;gap:9px;margin:0;padding-left:20px;color:#45564d;font-size:13px;line-height:1.45}.destination{font-size:12px;line-height:1.5;color:#65746c;margin:17px 0}form{display:grid;grid-template-columns:1fr auto;gap:10px}button{border:0;border-radius:11px;padding:13px 18px;font:inherit;font-size:13px;font-weight:800;cursor:pointer}.approve{background:#17663f;color:white}.deny{background:#edf1ed;color:#34473c}small{display:block;color:#78867e;font-size:10px;line-height:1.45;margin-top:18px}@media(max-width:520px){.card{padding:26px 22px;border-radius:18px}h1{font-size:27px}form{grid-template-columns:1fr}.deny{order:2}}
+  .independence{margin:16px 0;padding:12px 14px;border-radius:12px;background:#f4f6f2;color:#66746c;font-size:11px;line-height:1.5;border:1px solid #e1e6df}
   </style></head><body>${content}</body></html>`;
+}
+
+function independenceNotice() {
+  return `<p class="independence">Conecta Colombia es una iniciativa independiente de coordinación humanitaria. No está afiliada, patrocinada ni operada por Starlink o SpaceX.</p>`;
 }
 
 function htmlPage(body: string, status = 200) {

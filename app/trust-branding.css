@@ -1,0 +1,32 @@
+.footer-copy {
+  max-width: 620px;
+  text-align: right;
+}
+
+.footer-copy p {
+  margin: 0;
+  max-width: none;
+  text-align: inherit;
+}
+
+.footer-copy small {
+  display: block;
+  margin-top: 7px;
+  color: #7c8981;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.success-card .independence-note {
+  margin: 26px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .footer-copy {
+    text-align: left;
+  }
+}

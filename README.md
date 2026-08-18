@@ -2,6 +2,8 @@
 
 Portal público y tablero operativo para recibir, priorizar y gestionar solicitudes de conectividad Starlink en Colombia.
 
+Conecta Colombia es una iniciativa independiente de coordinación humanitaria. No está afiliada, patrocinada ni operada por Starlink o SpaceX; las marcas se mencionan únicamente para describir la tecnología de conectividad involucrada.
+
 - Producción: [starlinkcolombia.org](https://starlinkcolombia.org)
 - Plataforma: OpenAI Sites sobre Cloudflare Workers
 - Aplicación: Next.js 16, React 19, Vinext y TypeScript

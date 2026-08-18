@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./trust-branding.css";
 
 export const metadata: Metadata = {
   title: "Conecta Colombia — Solicitud Starlink",
-  description: "Solicita conectividad Starlink para una comunidad o servicio esencial en Colombia.",
-  other: {
-    "codex-preview": "development",
-  },
+  description: "Portal independiente de Conecta Colombia para solicitar conectividad en comunidades y servicios esenciales de Colombia.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
